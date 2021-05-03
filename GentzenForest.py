@@ -2,6 +2,69 @@
 from generic_trees import GenericTree
 import logic
 
+class MonadicInference:
+    def __init__(self, in_squeme, out_squeme): # arguments are translated formulas
+
+        self.in_squeme = in_squeme
+        self.in_tree_squeme = logic.Tree(self.in_squeme)
+        self.out_squeme = out_squeme
+        self.out_tree_squeme = logic.Tree(self.out_squeme)
+   
+       
+    
+    def _follows_the_squeme(self, squeme, tree): #squeme and tree are trees
+        if logic.Formulas.is_atom(squeme.formula): return True
+
+        if squeme.value in logic.Formulas.binary_connectors:
+            if squeme.value == tree.value:
+                l = self._follows_the_squeme(squeme.left, tree.left)
+                r = self._follows_the_squeme(squeme.right, tree.right)
+                return l and r
+                    
+            else: return False
+        
+        elif squeme.value in logic.Formulas.dyadic_connectors:
+            if squeme.value == tree.value:
+                return self._follows_the_squeme(squeme.left, tree.left)
+            else: return False
+
+    def follows_the_squeme(self, tree):
+        return self._follows_the_squeme(self.in_tree_squeme, tree)
+
+    #def __call__(self, formula):
+    #    #return self.apply_squeme(formula)
+    #    pass
+
+and_elimination = MonadicInference('(p&q)','p')
+example_tree = logic.Tree('(( p -> q ) and ( p or ( not q ) ))')
+
+print(and_elimination.follows_the_squeme(example_tree))
+
+class Inference:
+    def __init__(self, in_squemes, out_squemes):
+        self.in_squemes = in_squemes
+        self.out_squemes = out_squemes
+        self.calc_squemes_logic_trees()
+
+    def calc_squemes_logic_trees(self):
+        self.in_squeme_trees = {}
+        self.out_squeme_trees = {}
+        for squeme in self.in_squemes:
+            self.in_squeme_trees.update({squeme : logic.Tree(squeme)})
+        for squeme in self.out_squemes:
+            self.out_squeme_trees.update({squeme : logic.Tree(squeme)})
+    
+
+    def __call__(self, inputs):
+        if self.follows_the_squeme(inputs):
+            return self.output_squeme
+
+#implication_elimination = Inference(['(X -> Y)', 'X'], 'Y') # inference squeme
+#keys = ['( ( not p ) -> ' + t.formula + ' ) ', '( not p )'] # example
+#                        # type(t) is logic.Treee
+#self.theorems.update(Inference(keys)) # apply the inference for specific formule
+#            # new theorem would be added: 't.formula'
+
 class GentzenForest: 
     def __init__(self, premises):
         if type(premises) is not logic.Premises:

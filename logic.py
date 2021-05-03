@@ -5,6 +5,8 @@ class Formulas:
 
     natural_connectors = ['not','and','or','->']
     connectors = ['!','&','|','>']
+    binary_connectors = ['&','|','>']
+    dyadic_connectors = ['!']
     connectors_translator = dict(zip(natural_connectors, connectors))
 
 
@@ -32,7 +34,7 @@ class Formulas:
                     return (phi[:i],phi[i],phi[i+1:])
         else: return False
     
-    def is_atom(formula): # the formula can be in any form 
+    def is_atom(formula): # the formula can be in any form (except in tree form)
         return formula[0] != '('
 
 class Tree(GenericTree):
