@@ -1,24 +1,22 @@
-from Gentzen import *
-example_formules = [
-    '((p and (p -> r)) or (q -> t))',
-    '(p and not not ((q -> r) -> (p or not r)))',
-    '(p -> (q -> r))',
-    'not not not',
-    'not b',
-    'not',
-    'p',
-    '(not p and (not r)',
-    '(not p and (not r))',
-    '( not p and ( not r))',
-    '(( not p) and ( not r))',
-    ]
+from GentzenForest import GentzenForest as GF
 
-for formule in example_formules:
-    print(Gentzen.translate_string(formule))
-    print(Gentzen.is_well_formed(formule))
-    
+premises = [
+        '( not ( not (( not ( not (r and (r and s)) ) ) and (p and q)) ) )',
+        '(q -> (r and (s -> w)))'
+       ]
+
+premises2 = [
+        '(p or q)',
+        '(p -> y)',
+        '(q -> y)'
+        ]
 
 
+demostrator = GF(premises2)
+demostrator.atomize_forest()
+demostrator.print_theorems()
+
+print('Es y un teorema?', 'y' in demostrator.get_theorems())
 
 
 

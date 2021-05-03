@@ -31,6 +31,9 @@ class Formulas:
                 if phi[i] in Formulas.connectors and len(aux_stack) == 0:
                     return (phi[:i],phi[i],phi[i+1:])
         else: return False
+    
+    def is_atom(formula): # the formula can be in any form 
+        return formula[0] != '('
 
 class Tree(GenericTree):
     
@@ -42,6 +45,9 @@ class Tree(GenericTree):
         if is_natural:
             premise = Formulas.translate_string(premise)
         self.translate_to_tree(premise)
+
+        self.formula = premise
+
 
     def translate_to_tree(self, premise): # it assumes that the premise is translated and well formed 
         if premise[0] == '(':
@@ -57,6 +63,33 @@ class Tree(GenericTree):
 
         else: # is atom
             self.value = premise
+
+
+    def print_node(self):
+        print('formula = ', self.formula)
+        super().print_node()
+        print()
+
+class Premises:
+    def __init__(self, premises = []): # the premises can be c.Tree's or natural strings
+        self.set = set()
+        for premise in premises:
+            self.append(premise)
+
+    def __repr__(self):
+        return repr(self.set)
+
+    def get_set(self):
+        return self.set
+
+    def append(self, premise):
+        if type(premise) is Tree:
+            self.set.add(premise)
+        elif type(premise) is str:
+            self.set.add(Tree(premise))
+
+
+
 
 
 
