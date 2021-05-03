@@ -11,7 +11,6 @@ example_formules = [
     '(not p and (not r))',
     '( not p and ( not r))',
     '(( not p) and ( not r))',
-
     ]
 
 for formule in example_formules:

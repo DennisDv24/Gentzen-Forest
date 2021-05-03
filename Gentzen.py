@@ -48,17 +48,18 @@ class Gentzen:
     
     def get_binary_components(phi):
         l = len(phi) - 1
-        phi = phi[1:l]
-        aux_stack = []
-        for i in range(l):
-            if phi[i] == '(':
-                aux_stack.append(0)
-            elif phi[i] == ')' and len(aux_stack) > 0:
-                aux_stack.pop()
+        if phi[0] == '(' and phi[l] == ')':
+            phi = phi[1:l]
+            aux_stack = []
+            for i in range(l):
+                if phi[i] == '(':
+                    aux_stack.append(0)
+                elif phi[i] == ')' and len(aux_stack) > 0:
+                    aux_stack.pop()
 
-            if phi[i] in Gentzen.connectors and len(aux_stack) == 0:
-                return (phi[:i],phi[i],phi[i+1:])
-         
+                if phi[i] in Gentzen.connectors and len(aux_stack) == 0:
+                    return (phi[:i],phi[i],phi[i+1:])
+        else: return False
 
     def is_well_formed(string):    
         string = Gentzen.translate_string(string)
@@ -98,29 +99,107 @@ class Gentzen:
             else: return False
 
         return recursive_comprobation(string)
+
+
+    def and_introduction(phi, psi):
+        return '(' + phi + '&' + psi + ')'
     
-    def and_introduction(premise1, premise2):
-        return premise1 + '&' + premise2
-
-    def and_right_elimination(premise):
-        return Gentzen.get_binary_components(premise)[0]
-
-    def and_left_elimination(premise):
-        return Gentzen.get_binary_components(premise)[1]
-
+    def and_right_elimination(phi):
+        components = Gentzen.get_binary_components(phi)
+        if components[1] == '&':
+            return components[0]
+        else: return False
+    def and_left_elimination(phi):
+        components = Gentzen.get_binary_components(phi)
+        if components[1] == '&':
+            return components[2]
+        else: return False
+    
     def or_right_introduction(premise, formule_to_introduce):
         return '(' + premise + '|' + formule_to_introduce + ')'
     def or_left_introduction(premise, formule_to_introduce):
         return '(' + formule_to_introduce + '|' + premise + ')'
-    
+   
     def or_elimination(premise, implication1, implication2):
-        phi, psi = Gentzen.get_binary_components(premise)
-        chi = Gentzen.get_binary_components(implication1)[1]
-        return chi
+        phi, _or, psi = Gentzen.get_binary_components(premise)
+        if _or == '|':
+            i1 = Gentzen.get_binary_components(implication1)
+            i2 = Gentzen.get_binary_components(implication2)
+            
+            if i1[1:] == i2[1:] and ((phi == i1[0] and psi == i2[0]) or
+                    (phi == i2[0] and psi == i1[0])):
+                return i1[2]
 
-    # TODO this functions dont check if the operation is
-    # possible, they just do it. But the logic is similar,
-    # so should not be so difficult to implement
+        return False
+
+    def not_introduction(implication1, implication2): # reductio ad absurdum: difficult to compute
+        phi1, im1, psi = Gentzen.get_binary_components(implication1)
+        phi2, im2, not_psi = Gentzen.get_binary_components(implication2)
+
+        if phi1 == phi2 and im1 == im2 and not_psi[1:] == psi:
+            return '!' + phi1
+        else: return False
+
+    def not_elimination(premise):
+        return premise[2:] if premise[0] == '!' == premise[1] else False
+    
+    def implication_introduction(aux_premise):
+        # premises.append(aux_premise)
+        # return aux_premise -> phi
+        # where phi is any new formule generated with the new premises
+        pass # difficult to compute
+
+    def implication_elimination(phi, implication):
+        aux_phi, im, psi = Gentzen.get_binary_components(implication)
+        return psi if aux_phi == phi and im == '>' else False
+
+    rules = [and_introduction,
+             and_right_elimination,
+             and_left_elimination,
+             or_right_introduction,
+             or_left_introduction,
+             or_elimination,
+             not_introduction,
+             not_elimination,
+             implication_introduction,
+             implication_elimination]
+    
+    ez_rules = [and_introduction,
+                and_right_elimination,
+                and_left_elimination,
+                or_right_introduction,
+                or_left_introduction,
+                or_elimination,
+                not_elimination,
+                implication_elimination]
+
+    ezez_rules = [and_introduction,
+                  and_right_elimination,
+                  and_left_elimination,
+                  or_right_introduction,
+                  or_left_introduction,
+                  not_elimination]
+
+    atomic_rules = [and_left_elimination,
+                    and_right_elimination,
+                    not_elimination]
+
+    def atomic_generator(premises, theorems = []):
+        try:
+            for premise in premises:
+                neg_atom = Gentzen.not_elimination(premise)
+                atom1 = Gentzen.and_left_elimination(premise)
+                atom2 = Gentzen.and_right_elimination(premise)
+                theorems.append(neg_atom)
+                theorems.append(atom1)
+                theorems.append(atom2)
+                print(theorems)
+                
+                Gentzen.atomic_generator(atom1, theorems)
+                Gentzen.atomic_generator(atom2, theorems)
+                Gentzen.atomic_generator(neg_atom, theorems)
+        except: print('idk lol')
+
 
     # TODO the generator would try to apply every rule to every
     # formule. To generate INF formules just aply the 
