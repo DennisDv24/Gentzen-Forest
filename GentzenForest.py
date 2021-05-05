@@ -35,24 +35,24 @@ class MonadicInference:
         applied_schemes_map = {}
         if self._follows_the_scheme(self.in_tree_scheme, formula_tree, applied_schemes_map):
             return applied_schemes_map
-    
+   
     def apply_out_scheme(self, applied_map):
-        out_tree = logic.Tree() 
-        pass
-        # how the fuck can i apply it?
+        aux_str = self.out_tree_scheme.formula
+        for elem in applied_map:
+            aux_str = aux_str.replace(elem, applied_map[elem].formula)
+
+        return logic.Tree(aux_str)
 
     def __call__(self, formula_tree): 
         applied = self.apply_in_scheme(formula_tree)
         return self.apply_out_scheme(applied)
 
-
-    #def __call__(self, formula):
-    #    #return self.apply_scheme(formula)
-    #    pass
-
-and_elimination = MonadicInference('(p&q)','p')
-example_tree = logic.Tree('(( p -> q ) and ( p or ( not q ) ))')
-aconclusion = and_elimination()
+morgan = MonadicInference('( not (X or Y) )','(( not X ) and ( not Y ))')
+example_tree = logic.Tree('( not ((p -> q) or (q and (p and q))) )')
+example_tree.print_each_node()
+print('----')
+conclusion = morgan(example_tree)
+conclusion.print_each_node()
 
 class Inference:
     def __init__(self, in_squemes, out_squemes):
