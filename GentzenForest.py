@@ -3,42 +3,56 @@ from generic_trees import GenericTree
 import logic
 
 class MonadicInference:
-    def __init__(self, in_squeme, out_squeme): # arguments are translated formulas
+    def __init__(self, in_scheme, out_scheme): # arguments are translated formulas
 
-        self.in_squeme = in_squeme
-        self.in_tree_squeme = logic.Tree(self.in_squeme)
-        self.out_squeme = out_squeme
-        self.out_tree_squeme = logic.Tree(self.out_squeme)
+        self.in_scheme = in_scheme
+        self.in_tree_scheme = logic.Tree(self.in_scheme)
+        self.out_scheme = out_scheme
+        self.out_tree_scheme = logic.Tree(self.out_scheme)
    
-       
-    
-    def _follows_the_squeme(self, squeme, tree): #squeme and tree are trees
-        if logic.Formulas.is_atom(squeme.formula): return True
+    def _follows_the_scheme(self, scheme, tree, applied_schemes = {}): # (scheme, tree) are trees
+        if logic.Formulas.is_atom(scheme.formula): 
+            applied_schemes.update({scheme.formula : tree})
+            return True
 
-        if squeme.value in logic.Formulas.binary_connectors:
-            if squeme.value == tree.value:
-                l = self._follows_the_squeme(squeme.left, tree.left)
-                r = self._follows_the_squeme(squeme.right, tree.right)
+        if scheme.value in logic.Formulas.binary_connectors:
+            if scheme.value == tree.value:
+                l = self._follows_the_scheme(scheme.left, tree.left, applied_schemes)
+                r = self._follows_the_scheme(scheme.right, tree.right, applied_schemes)
                 return l and r
                     
             else: return False
         
-        elif squeme.value in logic.Formulas.dyadic_connectors:
-            if squeme.value == tree.value:
-                return self._follows_the_squeme(squeme.left, tree.left)
+        elif scheme.value in logic.Formulas.dyadic_connectors:
+            if scheme.value == tree.value:
+                return self._follows_the_scheme(scheme.left, tree.left, applied_schemes)
             else: return False
 
-    def follows_the_squeme(self, tree):
-        return self._follows_the_squeme(self.in_tree_squeme, tree)
+    def follows_the_scheme(self, formula_tree):
+        return self._follows_the_scheme(self.in_tree_scheme, formula_tree)
+        
+    def apply_in_scheme(self, formula_tree):
+        applied_schemes_map = {}
+        if self._follows_the_scheme(self.in_tree_scheme, formula_tree, applied_schemes_map):
+            return applied_schemes_map
+    
+    def apply_out_scheme(self, applied_map):
+        out_tree = logic.Tree() 
+        pass
+        # how the fuck can i apply it?
+
+    def __call__(self, formula_tree): 
+        applied = self.apply_in_scheme(formula_tree)
+        return self.apply_out_scheme(applied)
+
 
     #def __call__(self, formula):
-    #    #return self.apply_squeme(formula)
+    #    #return self.apply_scheme(formula)
     #    pass
 
 and_elimination = MonadicInference('(p&q)','p')
 example_tree = logic.Tree('(( p -> q ) and ( p or ( not q ) ))')
-
-print(and_elimination.follows_the_squeme(example_tree))
+aconclusion = and_elimination()
 
 class Inference:
     def __init__(self, in_squemes, out_squemes):
@@ -67,9 +81,9 @@ class Inference:
 
 class GentzenForest: 
     def __init__(self, premises):
-        if type(premises) is not logic.Premises:
-            premises = logic.Premises(premises)
-        self.premises = premises.get_set()
+        if type(premises) is not set():
+            premises = set(premises)
+        self.premises = premises
         self.premises = {tree.formula : tree for tree in self.premises}
         self.theorems = self.premises.copy()
 

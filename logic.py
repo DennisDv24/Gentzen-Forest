@@ -39,7 +39,7 @@ class Formulas:
 
 class Tree(GenericTree):
     
-    def __init__(self, premise, is_natural = True): # it assumes that the premise is natural and well formed
+    def __init__(self, premise, is_natural = True): # it assumes that the premise is well formed
         self.value = None
         self.left = None # main
         self.right = None
@@ -72,23 +72,6 @@ class Tree(GenericTree):
         super().print_node()
         print()
 
-class Premises:
-    def __init__(self, premises = []): # the premises can be c.Tree's or natural strings
-        self.set = set()
-        for premise in premises:
-            self.append(premise)
-
-    def __repr__(self):
-        return repr(self.set)
-
-    def get_set(self):
-        return self.set
-
-    def append(self, premise):
-        if type(premise) is Tree:
-            self.set.add(premise)
-        elif type(premise) is str:
-            self.set.add(Tree(premise))
 
 
 

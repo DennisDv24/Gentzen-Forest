@@ -66,11 +66,19 @@ class GenericTree: # interface for binary trees
         else: aux_right = 'N'
         print(aux_left, spaces + '  ', aux_right)
 
-    def print_each_node(self):
+    def print_ez_each_node(self):
         self.print_node()
         if self.left is not None: self.left.print_each_node()
         if self.right is not None: self.right.print_each_node()
         
+    def print_each_node(self):
+        self.print_node()
+        if self.left is not None:
+            if self.left.right is not None or self.left.left is not None:
+                self.left.print_each_node()
+        if self.right is not None:
+            if self.right.right is not None or self.right.left is not None:
+                self.right.print_each_node()
 
 
 
