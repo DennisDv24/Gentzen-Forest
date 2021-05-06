@@ -1,22 +1,25 @@
-from GentzenForest import GentzenForest as GF
+from GentzenForest import *
 
-premises = [
-        '( not ( not (( not ( not (r and (r and s)) ) ) and (p and q)) ) )',
-        '(q -> (r and (s -> w)))'
-       ]
+t1 = logic.Tree('(( not p ) or (q -> r))')
+t2 = logic.Tree('(( not p ) -> (a and b))')
+t3 = logic.Tree('((q -> r) -> (a and b))')
 
-premises2 = [
-        '(p or q)',
-        '(p -> y)',
-        '(q -> y)'
-        ]
+deduced = NonMonadicGentzenForest.or_elimination([t1,t2,t3])
+maps = NonMonadicGentzenForest.or_elimination.get_maps_from_inferences([t1,t3,t2])
+
+and_elim = NonMonadicInference('(X and Y)','X')
+t = logic.Tree('(( not p ) and (q or r))')
 
 
-demostrator = GF(premises2)
-demostrator.atomize_forest()
-demostrator.print_theorems()
 
-print('Es y un teorema?', 'y' in demostrator.get_theorems())
+premises = {'(X -> Y)', 'X'}
+conclusion = 'Y'
+implication_elimination = NonMonadicInference(premises, conclusion)
+
+t1 = logic.Tree('(( not p ) -> (q and r))')
+t2 = logic.Tree('( not q )')
+deduction = implication_elimination([t1, t2]) 
+
 
 
 
