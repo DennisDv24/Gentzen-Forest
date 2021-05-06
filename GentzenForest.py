@@ -3,13 +3,17 @@ from generic_trees import GenericTree
 import logic
 
 #TODO add exception handling
+
+
 class MonadicInference:
-    def __init__(self, in_scheme, out_scheme): # arguments are translated formulas
+    # if out_scheme is None it means that the MonadicInference only will be used
+    # to check if formulas follow schemes
+    def __init__(self, in_scheme, out_scheme = None): # arguments are natural formulas
 
         self.in_scheme = in_scheme
         self.in_tree_scheme = logic.Tree(self.in_scheme)
         self.out_scheme = out_scheme
-        self.out_tree_scheme = logic.Tree(self.out_scheme)
+        self.out_tree_scheme = logic.Tree(self.out_scheme) if out_scheme is not None else None
    
     def _follows_the_scheme(self, scheme, tree, applied_schemes = {}): # (scheme, tree) are trees
         if logic.Formulas.is_atom(scheme.formula): 
@@ -31,7 +35,12 @@ class MonadicInference:
 
     def follows_the_scheme(self, formula_tree):
         return self._follows_the_scheme(self.in_tree_scheme, formula_tree)
-        
+  
+    def get_applied_schemes_map(self, formula_tree):
+        aux = {}
+        if self._follows_the_scheme(self.in_tree_scheme, formula_tree, aux):
+            return aux
+
     def apply_in_scheme(self, formula_tree):
         applied_schemes_map = {}
         if self._follows_the_scheme(self.in_tree_scheme, formula_tree, applied_schemes_map):
@@ -52,6 +61,66 @@ class MonadicInference:
     def __repr__(self):
         return self.in_scheme + '  |-  ' + self.out_scheme
 
+
+class NonMonadicInference:
+    # premises is a set in natural form, conclusion is a formula in natural form
+    def __init__(self, premises, conclusion): 
+        self.monadic_inferences = []
+        for premise in premises:
+            self.monadic_inferences.append(MonadicInference(premise))
+        
+        self.conclusion_tree = logic.Tree(conclusion)
+
+    def get_maps_from_inferences(self, formula_trees):
+        maps = []
+        for inference, tree_to_map in zip(self.monadic_inferences, formula_trees):
+            aux_map_to_append = inference.get_applied_schemes_map(tree_to_map)
+            maps.append(aux_map_to_append)
+
+        return maps
+    
+    def maps_are_coherent(self, maps): # TODO algorithm too slow
+        aux_map = {}
+        for _map in maps:
+            for elem in _map:
+                if elem in aux_map:
+                    if _map[elem].formula != aux_map[elem].formula:
+                        return False
+                aux_map.update({elem : _map[elem]})
+        return True
+
+
+
+    #final step of the algorithm
+    def apply_inferences_from_maps(self, maps):
+        if self.maps_are_coherent(maps):
+            aux_str = self.conclusion_tree.formula
+            for _map in maps:
+                for elem in _map:
+                    aux_str = aux_str.replace(elem, _map[elem].formula)
+
+            return logic.Tree(aux_str)
+
+    def __call__(self, trees): # trees is an list or set of logic.Tree's
+        maps = self.get_maps_from_inferences(trees) 
+        return self.apply_inferences_from_maps(maps) 
+        # TODO handle exceptions of wrong trees 
+
+premises = {'(X -> Y)', 'X'}
+conclusion = 'Y'
+implication_elimination = NonMonadicInference(premises, conclusion)
+
+t1 = logic.Tree('(( not p ) -> (q and r))')
+t2 = logic.Tree('( not q )')
+deduction = implication_elimination([t1, t2]) 
+
+
+    
+
+
+
+
+   
 
 ################## WORKS FINE :) #########################################
 #morgan = MonadicInference('( not (X or Y) )','(( not X ) and ( not Y ))') 
