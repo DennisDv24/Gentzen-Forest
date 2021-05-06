@@ -2,6 +2,7 @@
 from generic_trees import GenericTree
 import logic
 
+#TODO add exception handling
 class MonadicInference:
     def __init__(self, in_scheme, out_scheme): # arguments are translated formulas
 
@@ -47,37 +48,34 @@ class MonadicInference:
         applied = self.apply_in_scheme(formula_tree)
         return self.apply_out_scheme(applied)
 
-morgan = MonadicInference('( not (X or Y) )','(( not X ) and ( not Y ))')
-example_tree = logic.Tree('( not ((p -> q) or (q and (p and q))) )')
-example_tree.print_each_node()
-print('----')
-conclusion = morgan(example_tree)
-conclusion.print_each_node()
 
-class Inference:
-    def __init__(self, in_squemes, out_squemes):
-        self.in_squemes = in_squemes
-        self.out_squemes = out_squemes
-        self.calc_squemes_logic_trees()
+################## WORKS FINE :) #########################################
+#morgan = MonadicInference('( not (X or Y) )','(( not X ) and ( not Y ))') 
+#example_tree = logic.Tree('( not ((p -> q) or (q and (p and q))) )')
+#example_tree.print_each_node()
+#print('----')
+#conclusion = morgan(example_tree)
+#conclusion.print_each_node()
 
-    def calc_squemes_logic_trees(self):
-        self.in_squeme_trees = {}
-        self.out_squeme_trees = {}
-        for squeme in self.in_squemes:
-            self.in_squeme_trees.update({squeme : logic.Tree(squeme)})
-        for squeme in self.out_squemes:
-            self.out_squeme_trees.update({squeme : logic.Tree(squeme)})
-    
-
-    def __call__(self, inputs):
-        if self.follows_the_squeme(inputs):
-            return self.output_squeme
-
-#implication_elimination = Inference(['(X -> Y)', 'X'], 'Y') # inference squeme
-#keys = ['( ( not p ) -> ' + t.formula + ' ) ', '( not p )'] # example
-#                        # type(t) is logic.Treee
-#self.theorems.update(Inference(keys)) # apply the inference for specific formule
-#            # new theorem would be added: 't.formula'
+# TODO should be an lists (or sets) generalization for "MonadicInference" class
+#class Inference:   
+#    def __init__(self, in_squemes, out_squemes):
+#        self.in_squemes = in_squemes
+#        self.out_squemes = out_squemes
+#        self.calc_squemes_logic_trees()
+#
+#    def calc_squemes_logic_trees(self):
+#        self.in_squeme_trees = {}
+#        self.out_squeme_trees = {}
+#        for squeme in self.in_squemes:
+#            self.in_squeme_trees.update({squeme : logic.Tree(squeme)})
+#        for squeme in self.out_squemes:
+#            self.out_squeme_trees.update({squeme : logic.Tree(squeme)})
+#    
+#
+#    def __call__(self, inputs):
+#        if self.follows_the_squeme(inputs):
+#            return self.output_squeme
 
 class GentzenForest: 
     def __init__(self, premises):
@@ -152,7 +150,7 @@ class GentzenHardcoreForest(GentzenForest):
     # new inferences for extensions (infinite (and redundant) theorems machine)
     pass
 
-
+###################### TODO TODO TODO TODO 
 #TODO make an interface that would allow to add manually general theorems (like inference rules)
 # TODO every inference rule should be alien to the theorems generator,
 # make an interface for that
