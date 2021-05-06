@@ -46,7 +46,11 @@ class MonadicInference:
 
     def __call__(self, formula_tree): 
         applied = self.apply_in_scheme(formula_tree)
-        return self.apply_out_scheme(applied)
+        if applied is not None:
+            return self.apply_out_scheme(applied) 
+
+    def __repr__(self):
+        return self.in_scheme + '  |-  ' + self.out_scheme
 
 
 ################## WORKS FINE :) #########################################
@@ -77,11 +81,11 @@ class MonadicInference:
 #        if self.follows_the_squeme(inputs):
 #            return self.output_squeme
 
-class GentzenForest: 
-    def __init__(self, premises):
-        if type(premises) is not set():
-            premises = set(premises)
-        self.premises = premises
+class GentzenForest:  
+    def __init__(self, premises): # premises is a set of trees
+        if type(premises) is not logic.Premises:
+            premises = logic.Premises(premises)
+        self.premises = premises.get_set()
         self.premises = {tree.formula : tree for tree in self.premises}
         self.theorems = self.premises.copy()
 
@@ -146,12 +150,79 @@ class GentzenForest:
             self.implication_forest_atomization()
             self.or_forest_atomization()
 
-class GentzenHardcoreForest(GentzenForest):
-    # new inferences for extensions (infinite (and redundant) theorems machine)
-    pass
+
+class MonadicForest:
+    and_right_elimination = MonadicInference('(X and Y)', 'X') 
+    and_left_elimination = MonadicInference('(X and Y)', 'Y')
+    not_elimination = MonadicInference('( not ( not X ) )', 'X')
+     
+    inferences = [
+            and_right_elimination,
+            and_left_elimination,
+            not_elimination
+            ]
+
+    def __init__(self, premises):
+        if type(premises) is not logic.Premises:
+            premises = logic.Premises(premises)
+
+        self.premises = premises.get_set()
+        self.premises = {tree.formula : tree for tree in self.premises}
+        self.theorems = self.premises.copy()
+        self.inferences = MonadicForest.inferences
+    
+    def get_theorems(self):
+        return self.theorems
+
+    def print_theorems(self):
+        for key in self.theorems:
+            print(key)
+    
+    def get_inferences(self):
+        return self.inferences
+
+    def print_inferences(self):
+        for inference in self.inferences:
+            print(inference)
+
+    def add_inference(self, inference, out = None):  
+        if out is not None:
+            self.inferences.append(MonadicInference(inference, out))
+        else:
+            self.inferences.append(inference)
+    
+    def atomize_forest(self):
+        MF = MonadicForest
+        for key in self.theorems.copy(): # TODO making a copy is slow
+            for inference in self.inferences:
+                possible_theorem = inference(self.theorems[key])
+                if possible_theorem is not None:
+                    self.theorems.update({possible_theorem.formula : possible_theorem})
+
+
 
 ###################### TODO TODO TODO TODO 
 #TODO make an interface that would allow to add manually general theorems (like inference rules)
 # TODO every inference rule should be alien to the theorems generator,
 # make an interface for that
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -75,6 +75,27 @@ class Tree(GenericTree):
 
 
 
+class Premises:
+    def __init__(self, premises = []): # the premises can be c.Tree's or natural strings
+        self.set = set()
+        for premise in premises:
+            self.append(premise)
+
+    def __repr__(self):
+        return repr(self.set)
+
+    def get_set(self):
+        return self.set
+        
+    def print(self):
+        for premise in self.set:
+            print(premise.formula)
+
+    def append(self, premise):
+        if type(premise) is Tree:
+            self.set.add(premise)
+        elif type(premise) is str:
+            self.set.add(Tree(premise))
 
 
 
