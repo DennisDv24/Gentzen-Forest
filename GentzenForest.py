@@ -1,6 +1,7 @@
 
 from generic_trees import GenericTree
 import logic
+from itertools import product
 
 class MonadicInference:
     # if out_scheme is None it means that the MonadicInference only will be used
@@ -55,6 +56,9 @@ class MonadicInference:
         applied = self.apply_in_scheme(formula_tree)
         if applied is not None:
             return self.apply_out_scheme(applied) 
+    
+    def get_in_scheme(self):
+        return self.in_scheme
 
     def __repr__(self):
         return self.in_scheme + '  |-  ' + self.out_scheme
@@ -107,13 +111,25 @@ class NonMonadicInference:
                     aux_str = aux_str.replace(elem, _map[elem].formula)
 
             return logic.Tree(aux_str)
-
+    
     def __call__(self, trees): # trees is an list of logic.Trees or an logic.Tree
         if type(trees) is logic.Tree:
             trees = [trees]
-        if len(trees) > 0:
+        if len(trees) == len(self.monadic_inferences):
             maps = self.get_maps_from_inferences(trees) 
             return self.apply_inferences_from_maps(maps) # returns an tree
+
+    def __repr__(self):
+        out_str = '{ '
+        for monadic_inference in self.monadic_inferences:
+            out_str += monadic_inference.get_in_scheme() + ', '
+
+        out_str = out_str[:len(out_str)-2] + ' } |- '
+        out_str += self.conclusion_tree.formula
+        return out_str
+        
+
+
 
 class MonadicForest:
     and_right_elimination = MonadicInference('(X and Y)', 'X') 
@@ -202,44 +218,62 @@ class NonMonadicGentzenForest:
         for inference in self.inferences:
             print(inference)
 
-    def apply_nonmonadic_inference(self, inference):
-        keys = []
+    
+    def get_matrix_of_keys_that_follow_the_schemes(self, inference):
+        keys_that_follow_the_schemes = []
+        monadic_inferences = inference.get_monadic_inferences()
+        for i in range(len(monadic_inferences)):
+            keys_that_follow_the_schemes.append([])
+            for key in self.theorems: # possible copy?
+                if monadic_inferences[i].follows_the_scheme(self.theorems[key]):
+                    keys_that_follow_the_schemes[i].append(self.theorems[key])
+                    
+        return keys_that_follow_the_schemes
+    
+    def get_all_combinations_from_keys(self, keys_matrix):
+        return list(product(*keys_matrix))
+
+    def try_to_apply_inference(self, inference):
+        matrix_of_keys_to_combine = self.get_matrix_of_keys_that_follow_the_schemes(inference)
+        combinations_of_keys = self.get_all_combinations_from_keys(matrix_of_keys_to_combine)
+
+        for combination in combinations_of_keys:
+            possible_theorem = inference(combination)
+            if possible_theorem is not None:
+                self.theorems.update({possible_theorem.formula : possible_theorem})
+
+
 
     def apply_inferences_in_order(self, iterations = 1):
         for i in range(iterations):
             for inference in self.inferences:
-                aux_input_for_the_inference = []
-                schemes_of_inference = inference.get_monadic_inferences()
-                for scheme in schemes_of_inference:
-                    for key in self.theorems:
-                        if scheme.follows_the_scheme(self.theorems[key]):
-                            aux_input_for_the_inference.append(self.theorems[key])
-                            if len(aux_input_for_the_inference) == len(schemes_of_inference):
-                                go_to_next_scheme = True
-                            break
-                    if go_to_next_scheme: break
+                self.try_to_apply_inference(inference) 
+                
+                
 
-                possible_new_theorem = inference(aux_input_for_the_inference)
-                if possible_new_theorem is not None:
-                    self.theorems.update({possible_new_theorem.formula : possible_new_theorem})
+                #aux_input_for_the_inference = []
+                #schemes_of_inference = inference.get_monadic_inferences()
+                #for scheme in schemes_of_inference:
+                #    for key in self.theorems.copy():
+                #        if scheme.follows_the_scheme(self.theorems[key]):
+                #            print(scheme.in_tree_scheme.value)
 
 
 
 premises = logic.Premises()
 premises.append('(p and (q and r))')
-premises.append('(r -> s)')
-premises.append('(t or o)')
-premises.append('(t -> a)')
-premises.append('(o -> a)')
+#premises.append('(r -> s)')
+#premises.append('(t or o)')
+#premises.append('(t -> a)')
+#premises.append('(o -> a)')
 
 GF = NonMonadicGentzenForest(premises)
 GF.print_theorems()
 print('---')
-GF.apply_inferences_in_order(10)
+print()
+GF.apply_inferences_in_order(3)
 GF.print_theorems()
 
-print('----')
-print('----')
 
 # NOTE this works fine, so the generator should also work
 #and_test_left = NonMonadicInference('(X and Y)','X')
@@ -252,29 +286,3 @@ print('----')
 
 
 
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-   
