@@ -5,20 +5,19 @@ t2 = logic.Tree('(( not p ) -> (a and b))')
 t3 = logic.Tree('((q -> r) -> (a and b))')
 
 deduced = NonMonadicGentzenForest.or_elimination([t1,t2,t3])
-maps = NonMonadicGentzenForest.or_elimination.get_maps_from_inferences([t1,t3,t2])
 
-and_elim = NonMonadicInference('(X and Y)','X')
-t = logic.Tree('(( not p ) and (q or r))')
-
-
-
-premises = {'(X -> Y)', 'X'}
-conclusion = 'Y'
-implication_elimination = NonMonadicInference(premises, conclusion)
-
-t1 = logic.Tree('(( not p ) -> (q and r))')
-t2 = logic.Tree('( not q )')
-deduction = implication_elimination([t1, t2]) 
+#and_elim = NonMonadicInference('(X and Y)','X')
+#t = logic.Tree('(( not p ) and (q or r))')
+#
+#
+#
+#premises = {'(X -> Y)', 'X'}
+#conclusion = 'Y'
+#implication_elimination = NonMonadicInference(premises, conclusion)
+#
+#t1 = logic.Tree('(( not p ) -> (q and r))')
+#t2 = logic.Tree('( not q )')
+#deduction = implication_elimination([t1, t2]) 
 
 
 

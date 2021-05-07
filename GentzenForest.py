@@ -76,6 +76,9 @@ class NonMonadicInference:
         
         self.conclusion_tree = logic.Tree(conclusion)
 
+    def get_monadic_inferences(self):
+        return self.monadic_inferences
+
     # FIXME before updating te maps check if the key is already and try to update the maps logically
     # REF to the last TODO
     def get_maps_from_inferences(self, formula_trees): 
@@ -95,7 +98,7 @@ class NonMonadicInference:
                         return False
                 aux_map.update({elem : _map[elem]})
         return True
-
+    
     def apply_inferences_from_maps(self, maps):
         if self.maps_are_coherent(maps):
             aux_str = self.conclusion_tree.formula
@@ -108,8 +111,9 @@ class NonMonadicInference:
     def __call__(self, trees): # trees is an list of logic.Trees or an logic.Tree
         if type(trees) is logic.Tree:
             trees = [trees]
-        maps = self.get_maps_from_inferences(trees) 
-        return self.apply_inferences_from_maps(maps) 
+        if len(trees) > 0:
+            maps = self.get_maps_from_inferences(trees) 
+            return self.apply_inferences_from_maps(maps) # returns an tree
 
 class MonadicForest:
     and_right_elimination = MonadicInference('(X and Y)', 'X') 
@@ -164,7 +168,6 @@ class NonMonadicGentzenForest:
     and_right_elimination = NonMonadicInference('(X and Y)', 'X') 
     and_left_elimination = NonMonadicInference('(X and Y)', 'Y')
     not_elimination = NonMonadicInference('( not ( not X ) )', 'X')
-    
     implication_elimination = NonMonadicInference(['(X -> Y)', 'X'], 'Y')
     or_elimination = NonMonadicInference(['(X or Y)','(X -> Z)','(Y -> Z)'],'Z')
         
@@ -183,7 +186,7 @@ class NonMonadicGentzenForest:
         self.premises = premises.get_set()
         self.premises = {tree.formula : tree for tree in self.premises}
         self.theorems = self.premises.copy()
-        self.inferences = MonadicForest.inferences
+        self.inferences = NonMonadicGentzenForest.inferences
 
     def get_theorems(self):
         return self.theorems
@@ -202,15 +205,74 @@ class NonMonadicGentzenForest:
     def apply_nonmonadic_inference(self, inference):
         keys = []
 
-    def apply_inferences_in_order(self):
-        for key in self.theorems.copy(): # TODO making a copy is to slow
+    def apply_inferences_in_order(self, iterations = 1):
+        for i in range(iterations):
             for inference in self.inferences:
-                pass # TODO make the generator based on the inferences
+                aux_input_for_the_inference = []
+                schemes_of_inference = inference.get_monadic_inferences()
+                for scheme in schemes_of_inference:
+                    for key in self.theorems:
+                        if scheme.follows_the_scheme(self.theorems[key]):
+                            aux_input_for_the_inference.append(self.theorems[key])
+                            if len(aux_input_for_the_inference) == len(schemes_of_inference):
+                                go_to_next_scheme = True
+                            break
+                    if go_to_next_scheme: break
+
+                possible_new_theorem = inference(aux_input_for_the_inference)
+                if possible_new_theorem is not None:
+                    self.theorems.update({possible_new_theorem.formula : possible_new_theorem})
+
+
+
+premises = logic.Premises()
+premises.append('(p and (q and r))')
+premises.append('(r -> s)')
+premises.append('(t or o)')
+premises.append('(t -> a)')
+premises.append('(o -> a)')
+
+GF = NonMonadicGentzenForest(premises)
+GF.print_theorems()
+print('---')
+GF.apply_inferences_in_order(10)
+GF.print_theorems()
+
+print('----')
+print('----')
+
+# NOTE this works fine, so the generator should also work
+#and_test_left = NonMonadicInference('(X and Y)','X')
+#and_test_right = NonMonadicInference('(X and Y)', 'Y')
+#test = logic.Tree('(( not q ) and (p -> r))')
+#deduction1 = and_test_left(test)
+#deduction2 = and_test_right(test)
+#deduction3 = and_test_left([])
 
 
 
 
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
