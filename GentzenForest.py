@@ -128,9 +128,6 @@ class NonMonadicInference:
         out_str += self.conclusion_tree.formula
         return out_str
         
-
-
-
 class MonadicForest:
     and_right_elimination = MonadicInference('(X and Y)', 'X') 
     and_left_elimination = MonadicInference('(X and Y)', 'Y')
@@ -213,6 +210,10 @@ class NonMonadicGentzenForest:
     
     def get_inferences(self):
         return self.inferences
+    
+    def add_inference(self, inference):
+        if type(inference) is NonMonadicInference:
+            self.inferences.append(inference)
 
     def print_inferences(self):
         for inference in self.inferences:
@@ -249,40 +250,4 @@ class NonMonadicGentzenForest:
             for inference in self.inferences:
                 self.try_to_apply_inference(inference) 
                 
-                
-
-                #aux_input_for_the_inference = []
-                #schemes_of_inference = inference.get_monadic_inferences()
-                #for scheme in schemes_of_inference:
-                #    for key in self.theorems.copy():
-                #        if scheme.follows_the_scheme(self.theorems[key]):
-                #            print(scheme.in_tree_scheme.value)
-
-
-
-premises = logic.Premises()
-premises.append('(p and (q and r))')
-#premises.append('(r -> s)')
-#premises.append('(t or o)')
-#premises.append('(t -> a)')
-#premises.append('(o -> a)')
-
-GF = NonMonadicGentzenForest(premises)
-GF.print_theorems()
-print('---')
-print()
-GF.apply_inferences_in_order(3)
-GF.print_theorems()
-
-
-# NOTE this works fine, so the generator should also work
-#and_test_left = NonMonadicInference('(X and Y)','X')
-#and_test_right = NonMonadicInference('(X and Y)', 'Y')
-#test = logic.Tree('(( not q ) and (p -> r))')
-#deduction1 = and_test_left(test)
-#deduction2 = and_test_right(test)
-#deduction3 = and_test_left([])
-
-
-
 

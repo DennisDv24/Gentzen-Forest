@@ -1,23 +1,20 @@
 from GentzenForest import *
 
-t1 = logic.Tree('(( not p ) or (q -> r))')
-t2 = logic.Tree('(( not p ) -> (a and b))')
-t3 = logic.Tree('((q -> r) -> (a and b))')
+premises = logic.Premises(['( not ((p and q) or (q -> r)))', '(p or q)'])
+premises.append('(p -> (a and b))')
+premises.append('(q -> (a and b))')
 
-deduced = NonMonadicGentzenForest.or_elimination([t1,t2,t3])
+GF = NonMonadicGentzenForest(premises)
+Morgan1 = NonMonadicInference('( not (X or Y) )', '(( not X ) and ( not Y))')
+Morgan2 = NonMonadicInference('( not (X and Y) )', '(( not X ) or ( not Y))')
 
-#and_elim = NonMonadicInference('(X and Y)','X')
-#t = logic.Tree('(( not p ) and (q or r))')
-#
-#
-#
-#premises = {'(X -> Y)', 'X'}
-#conclusion = 'Y'
-#implication_elimination = NonMonadicInference(premises, conclusion)
-#
-#t1 = logic.Tree('(( not p ) -> (q and r))')
-#t2 = logic.Tree('( not q )')
-#deduction = implication_elimination([t1, t2]) 
+GF.add_inference(Morgan1)
+GF.add_inference(Morgan2)
+GF.print_theorems()
+print()
+print('Deduced Theorems:')
+GF.apply_inferences_in_order(3)
+GF.print_theorems()
 
 
 
