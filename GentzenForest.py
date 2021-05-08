@@ -127,3 +127,34 @@ class NonMonadicGentzenForest:
                 self.try_to_apply_inference(inference) 
                 
 
+class GentzenForestWithoutSubdedutions(NonMonadicGentzenForest):
+    
+    and_introduction = inferences.NonMonadicInference(['X','Y'],'(X and Y)')
+    inferences = NonMonadicGentzenForest.inferences + [and_introduction]
+
+    def __init__(self, premises):
+        super().__init__(premises)
+        self.inferences = GentzenForestWithoutSubdedutions.inferences
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
